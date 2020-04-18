@@ -7,10 +7,10 @@ import com.example.CourseBack.Entity.EquationResponse;
 import com.example.CourseBack.repos.EquationRepo;
 import com.google.gson.Gson;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @Controller
 @RequestMapping(path="/equation")
@@ -19,17 +19,16 @@ public class MainController {
 	private EquationRepo equationRepository;
 
 	@GetMapping(path="/getEquationById") // Map ONLY POST Requests
-	public @ResponseBody String GetEquation (@RequestParam Integer id) {
-		Equation equation = equationRepository.findById(id).get();
-		EquationResponse equationResponse = new EquationResponse(equation, new LineChart());
+	public @ResponseBody
+	ResponseEntity<String> GetEquation (@RequestParam Integer id, @RequestParam String lang) {
+		try {
+			Equation equation = equationRepository.findById(id).get();
+			EquationResponse equationResponse = new EquationResponse(equation, lang, new LineChart());
 
-		Gson gson = new Gson();
-		return gson.toJson(equationResponse);
-	}
-
-	@GetMapping(path="/all")
-	public @ResponseBody Iterable<Equation> getAllUsers() {
-		// This returns a JSON or XML with the users
-		return equationRepository.findAll();
+			Gson gson = new Gson();
+			return ResponseEntity.ok(gson.toJson(equationResponse));
+		}catch(Throwable cause){
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+		}
 	}
 }
